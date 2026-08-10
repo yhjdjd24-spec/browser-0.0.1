@@ -1,0 +1,41 @@
+name: Build iOS IPA
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.4'
+
+    - name: Build Archive
+      run: |
+        xcodebuild archive \
+          -project MyBrowser.xcodeproj \
+          -scheme MyBrowser \
+          -sdk iphoneos \
+          -archivePath build/MyBrowser.xcarchive \
+          CODE_SIGNING_ALLOWED=NO
+
+    - name: Export Unsigned IPA
+      run: |
+        mkdir -p build/Payload
+        cp -R build/MyBrowser.xcarchive/Products/Applications/*.app build/Payload/
+        cd build
+        zip -r MyBrowser.ipa Payload
+        
+    - name: Upload IPA Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: MyBrowser-Unsigned-IPA
+        path: build/MyBrowser.ipa
