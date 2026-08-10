@@ -1,8 +1,8 @@
 name: MyBrowser
 options:
-  bundleIdPrefix: com.example
+  bundleIdPrefix: com.browser.app
   deploymentTarget:
-    iOS: 15.0
+    iOS: 14.0
   xcodeVersion: "16.2.0"
   objectVersion: 56
 targets:
