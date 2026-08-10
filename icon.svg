@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Градиент фона -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="50%" stop-color="#1E1B4B" />
+      <stop offset="100%" stop-color="#311042" />
+    </linearGradient>
+    
+    <!-- Градиент стрелки компаса -->
+    <linearGradient id="needleNorth" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF5252" />
+      <stop offset="100%" stop-color="#FF1744" />
+    </linearGradient>
+    
+    <linearGradient id="needleSouth" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0E0E0" />
+      <stop offset="100%" stop-color="#9E9E9E" />
+    </linearGradient>
+    
+    <!-- Свечение вокруг кольца -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Фон иконки (квадрат со скругленными углами в стиле iOS) -->
+  <rect width="512" height="512" rx="115" ry="115" fill="url(#bgGrad)" />
+
+  <!-- Внешнее кольцо компаса -->
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#38BDF8" stroke-width="8" opacity="0.4" filter="url(#glow)" />
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#00F0FF" stroke-width="4" opacity="0.8" />
+
+  <!-- Деления компаса (Север, Юг, Восток, Запад) -->
+  <circle cx="256" cy="116" r="4" fill="#00F0FF" />
+  <circle cx="256" cy="396" r="4" fill="#00F0FF" opacity="0.5" />
+  <circle cx="116" cy="256" r="4" fill="#00F0FF" opacity="0.5" />
+  <circle cx="396" cy="256" r="4" fill="#00F0FF" opacity="0.5" />
+
+  <!-- Стрелка компаса -->
+  <g transform="rotate(-35 256 256)">
+    <!-- Северная стрелка (красная) -->
+    <polygon points="256,126 226,256 256,244" fill="url(#needleNorth)" />
+    <polygon points="256,126 286,256 256,244" fill="#D50000" />
+
+    <!-- Южная стрелка (светло-серая) -->
+    <polygon points="256,386 226,256 256,268" fill="url(#needleSouth)" />
+    <polygon points="256,386 286,256 256,268" fill="#757575" />
+
+    <!-- Центр стрелки -->
+    <circle cx="256" cy="256" r="14" fill="#FFFFFF" />
+    <circle cx="256" cy="256" r="6" fill="#1E1B4B" />
+  </g>
+</svg>
