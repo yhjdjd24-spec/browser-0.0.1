@@ -58,13 +58,15 @@ jobs:
           -scheme MyBrowser \
           -sdk iphoneos \
           -archivePath build/MyBrowser.xcarchive \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
           CODE_SIGNING_ALLOWED=NO
 
     - name: Export Unsigned IPA
       run: |
-        mkdir -p build/Payload
-        cp -R build/MyBrowser.xcarchive/Products/Applications/*.app build/Payload/
         cd build
+        mkdir -p Payload
+        cp -R MyBrowser.xcarchive/Products/Applications/MyBrowser.app Payload/
         zip -r MyBrowser.ipa Payload
 
     - name: Upload IPA Artifact
