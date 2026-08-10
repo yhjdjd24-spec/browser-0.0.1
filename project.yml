@@ -10,9 +10,8 @@ targets:
     type: application
     platform: iOS
     sources:
-      - path: .
-        includes:
-          - "*.swift"
+      - path: ContentView.swift
+      - path: MyBrowserApp.swift
       - path: Media.xcassets
     settings:
       GENERATE_INFOPLIST_FILE: YES
