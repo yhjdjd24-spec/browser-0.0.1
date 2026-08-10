@@ -19,7 +19,7 @@ jobs:
         xcode-version: '16.2.0'
 
     - name: Install Tools
-      run: brew install xcodegen imagemagick
+      run: brew install xcodegen imagemagick zsign
 
     - name: Generate App Icon Assets
       run: |
@@ -51,27 +51,24 @@ jobs:
     - name: Generate Xcode Project
       run: xcodegen generate
 
-    - name: Build Archive
+    - name: Build App
       run: |
-        xcodebuild archive \
-          -project MyBrowser.xcodeproj \
+        xcodebuild -project MyBrowser.xcodeproj \
           -scheme MyBrowser \
           -sdk iphoneos \
-          -archivePath build/MyBrowser.xcarchive \
+          -configuration Release \
+          -derivedDataPath build \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGNING_ALLOWED=NO \
-          AD_HOC_CODE_SIGNING_ALLOWED=YES
+          CODE_SIGNING_ALLOWED=NO
 
-    - name: Export Unsigned IPA
+    - name: Create Proper IPA with zsign
       run: |
-        cd build
-        mkdir -p Payload
-        cp -R MyBrowser.xcarchive/Products/Applications/MyBrowser.app Payload/
-        zip -r MyBrowser.ipa Payload
+        APP_PATH=$(find build/Build/Products/Release-iphoneos -name "*.app" | head -n 1)
+        zsign -z 9 -o build/MyBrowser.ipa "$APP_PATH"
 
     - name: Upload IPA Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: MyBrowser-Unsigned-IPA
+        name: MyBrowser-IPA
         path: build/MyBrowser.ipa
