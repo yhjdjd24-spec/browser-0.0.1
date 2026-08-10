@@ -2,7 +2,12 @@ import SwiftUI
 import WebKit
 import QuickLook
 
-// MARK: - Модель файла для Менеджера файлов
+// Обертка для URL, чтобы он соответствовал протоколу Identifiable
+struct PreviewItem: Identifiable {
+    let id = UUID()
+    let url: URL
+}
+
 struct DownloadedFile: Identifiable {
     let id = UUID()
     let name: String
@@ -11,7 +16,6 @@ struct DownloadedFile: Identifiable {
     let date: Date
 }
 
-// MARK: - Главный View
 struct ContentView: View {
     @StateObject private var webModel = WebViewModel()
     @State private var urlString = "https://www.google.com"
@@ -20,7 +24,6 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Ввод URL и кнопки управления
                 HStack(spacing: 12) {
                     Button(action: { webModel.webView.goBack() }) {
                         Image(systemName: "chevron.backward")
@@ -44,7 +47,6 @@ struct ContentView: View {
                         Image(systemName: "arrow.clockwise")
                     }
                     
-                    // Кнопка открытия Менеджера скачанных файлов
                     Button(action: { showDownloadsList.toggle() }) {
                         Image(systemName: "folder")
                     }
@@ -52,7 +54,6 @@ struct ContentView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 8)
                 
-                // Индикатор прогресса загрузки страницы
                 if webModel.isLoading {
                     ProgressView(value: webModel.estimatedProgress)
                         .progressViewStyle(LinearProgressViewStyle(tint: .blue))
@@ -61,14 +62,12 @@ struct ContentView: View {
                     Spacer().frame(height: 2)
                 }
                 
-                // Веб-контейнер
                 WebViewContainer(webModel: webModel)
             }
             .navigationBarHidden(true)
             .sheet(isPresented: $showDownloadsList) {
                 DownloadsManagerView(webModel: webModel)
             }
-            // Уведомление о начале/завершении скачивания
             .overlay(
                 VStack {
                     if let status = webModel.downloadStatusMessage {
@@ -93,17 +92,14 @@ struct ContentView: View {
     }
 }
 
-// MARK: - ViewModel
 class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKDownloadDelegate {
     @Published var webView: WKWebView
     @Published var canGoBack = false
     @Published var canGoForward = false
     
-    // Прогресс загрузки
     @Published var isLoading = false
     @Published var estimatedProgress: Double = 0.0
     
-    // Менеджер файлов
     @Published var downloadedFiles: [DownloadedFile] = []
     @Published var downloadStatusMessage: String?
     
@@ -123,7 +119,6 @@ class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKDownload
         fetchDownloadedFiles()
     }
     
-    // Наблюдение за прогрессом загрузки через KVO
     private func setupKVO() {
         progressObservation = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] webView, _ in
             DispatchQueue.main.async {
@@ -153,12 +148,11 @@ class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKDownload
         self.canGoForward = webView.canGoForward
     }
     
-    // MARK: - WKDownloadDelegate (Скачивание файлов)
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
         if navigationAction.shouldPerformDownload {
-            decisionHandler(.download)
+            decisionHandler(.download, preferences)
         } else {
-            decisionHandler(.allow)
+            decisionHandler(.allow, preferences)
         }
     }
     
@@ -200,7 +194,6 @@ class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKDownload
         }
     }
     
-    // MARK: - Управление файлами
     func fetchDownloadedFiles() {
         let fileManager = FileManager.default
         guard let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
@@ -243,7 +236,6 @@ class WebViewModel: NSObject, ObservableObject, WKNavigationDelegate, WKDownload
     }
 }
 
-// MARK: - WebView Container
 struct WebViewContainer: UIViewRepresentable {
     @ObservedObject var webModel: WebViewModel
     
@@ -254,11 +246,10 @@ struct WebViewContainer: UIViewRepresentable {
     func updateUIView(_ uiView: WKWebView, context: Context) {}
 }
 
-// MARK: - Экран менеджера скачанных файлов
 struct DownloadsManagerView: View {
     @ObservedObject var webModel: WebViewModel
     @Environment(\.presentationMode) var presentationMode
-    @State private var previewURL: URL?
+    @State private var previewItem: PreviewItem?
     
     var body: some View {
         NavigationView {
@@ -285,7 +276,7 @@ struct DownloadsManagerView: View {
                             Spacer()
                             
                             Button(action: {
-                                previewURL = file.url
+                                previewItem = PreviewItem(url: file.url)
                             }) {
                                 Image(systemName: "eye")
                                     .foregroundColor(.blue)
@@ -305,17 +296,15 @@ struct DownloadsManagerView: View {
                     }
                 }
             }
-            .sheet(item: $previewURL) { url in
-                FilePreviewController(url: url)
+            .sheet(item: $previewItem) { item in
+                FilePreviewController(url: item.url)
             }
         }
     }
 }
 
-// MARK: - Быстрый просмотр файлов через QuickLook
-struct FilePreviewController: UIViewControllerRepresentable, Identifiable {
+struct FilePreviewController: UIViewControllerRepresentable {
     let url: URL
-    var id: URL { url }
     
     func makeUIViewController(context: Context) -> QLPreviewController {
         let controller = QLPreviewController()
