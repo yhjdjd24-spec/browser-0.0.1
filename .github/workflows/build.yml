@@ -18,8 +18,35 @@ jobs:
       with:
         xcode-version: '16.2.0'
 
-    - name: Install XcodeGen
-      run: brew install xcodegen
+    - name: Install Tools
+      run: brew install xcodegen imagemagick
+
+    - name: Generate App Icon Assets
+      run: |
+        mkdir -p Media.xcassets/AppIcon.appiconset
+        
+        if [ -f "icon.svg" ]; then
+          magick -background none icon.svg -resize 1024x1024 Media.xcassets/AppIcon.appiconset/icon_1024.png
+        else
+          magick -size 1024x1024 xc:blue Media.xcassets/AppIcon.appiconset/icon_1024.png
+        fi
+        
+        cat << 'EOF' > Media.xcassets/AppIcon.appiconset/Contents.json
+        {
+          "images": [
+            {
+              "filename": "icon_1024.png",
+              "idiom": "universal",
+              "platform": "ios",
+              "size": "1024x1024"
+            }
+          ],
+          "info": {
+            "author": "xcode",
+            "version": 1
+          }
+        }
+        EOF
 
     - name: Generate Xcode Project
       run: xcodegen generate
