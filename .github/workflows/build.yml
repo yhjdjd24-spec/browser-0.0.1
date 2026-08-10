@@ -19,7 +19,7 @@ jobs:
         xcode-version: '16.2.0'
 
     - name: Install Tools
-      run: brew install xcodegen imagemagick zsign
+      run: brew install xcodegen imagemagick
 
     - name: Generate App Icon Assets
       run: |
@@ -62,11 +62,13 @@ jobs:
           CODE_SIGNING_REQUIRED=NO \
           CODE_SIGNING_ALLOWED=NO
 
-    - name: Create Proper IPA with zsign
+    - name: Create Unsigned IPA
       run: |
         APP_PATH=$(find build_output/Build/Products/Release-iphoneos -name "*.app" | head -n 1)
-        mkdir -p output
-        zsign -z 9 -o output/MyBrowser.ipa "$APP_PATH"
+        mkdir -p output/Payload
+        cp -R "$APP_PATH" output/Payload/
+        cd output
+        zip -r MyBrowser.ipa Payload
 
     - name: Upload IPA Artifact
       uses: actions/upload-artifact@v4
