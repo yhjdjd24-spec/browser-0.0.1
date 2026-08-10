@@ -3,6 +3,8 @@ options:
   bundleIdPrefix: com.example
   deploymentTarget:
     iOS: 15.0
+  xcodeVersion: "15.4"
+  objectVersion: 56
 targets:
   MyBrowser:
     type: application
