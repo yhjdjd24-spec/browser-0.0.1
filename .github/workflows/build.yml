@@ -57,18 +57,19 @@ jobs:
           -scheme MyBrowser \
           -sdk iphoneos \
           -configuration Release \
-          -derivedDataPath build \
+          -derivedDataPath build_output \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
           CODE_SIGNING_ALLOWED=NO
 
     - name: Create Proper IPA with zsign
       run: |
-        APP_PATH=$(find build/Build/Products/Release-iphoneos -name "*.app" | head -n 1)
-        zsign -z 9 -o build/MyBrowser.ipa "$APP_PATH"
+        APP_PATH=$(find build_output/Build/Products/Release-iphoneos -name "*.app" | head -n 1)
+        mkdir -p output
+        zsign -z 9 -o output/MyBrowser.ipa "$APP_PATH"
 
     - name: Upload IPA Artifact
       uses: actions/upload-artifact@v4
       with:
         name: MyBrowser-IPA
-        path: build/MyBrowser.ipa
+        path: output/MyBrowser.ipa
